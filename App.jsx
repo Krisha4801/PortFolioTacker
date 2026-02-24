@@ -111,44 +111,6 @@ const PortfolioTracker = () => {
   const [lastDataFetch, setLastDataFetch] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
-// Show loading screen
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center min-w-0">
-          <Wallet className="mx-auto text-blue-600 mb-4" size={64} />
-          <p className="text-slate-600 text-lg">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login screen if not authenticated
-  if (!user) {
-    return (
-      <>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 w-full max-w-md mx-auto text-center">
-            <Wallet className="mx-auto text-blue-600 mb-4" size={64} />
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">Portfolio Tracker</h1>
-            <p className="text-slate-600 mb-6">Track your investments in one place</p>
-            <button
-              onClick={signInWithGoogle}
-              className="w-full flex items-center justify-center gap-3 px-3 sm:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              <LogIn size={20} />
-              Sign in with Google
-            </button>
-          </div>
-        </div>
-        <div className="fixed bottom-0 w-full text-center pb-4 bg-gradient-to-br from-slate-50 to-slate-100">
-          <p className="text-slate-400 text-sm">
-
-          </p>
-        </div>
-      </>
-    );
-  }
 
   // Load data from Firestore when user logs in
   useEffect(() => {
@@ -252,7 +214,7 @@ const PortfolioTracker = () => {
         }
 
         setLastDataFetch(now);
-      } catch (error) {
+      } catch(error) {
         console.error('Error loading data:', error);
         alert('Failed to load data from Firebase');
       }
