@@ -4,6 +4,7 @@ import { Plus, TrendingUp, TrendingDown, RefreshCw, Wallet, BarChart3, ArrowLeft
 import { db, auth, signInWithGoogle, logOut } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, getDoc, setDoc, writeBatch, orderBy, limit } from 'firebase/firestore';
+import NotesModal from './NotesModal';
 
 // Color palette for instruments
 const COLORS = {
@@ -798,6 +799,93 @@ const PortfolioTracker = () => {
       </div>
     );
   };
+const fetchStockPrice = async (symbolOrName, isMutualFund = false) => {
+  const cleanSymbol = symbolOrName.replace(/\.(NS|BO)$/i, '').trim();
+
+  // Try all API keys in sequence
+  for (let attempt = 0; attempt < API_KEYS.length; attempt++) {
+    const apiKey = API_KEYS[currentApiKeyIndex];
+
+    try {
+      // Different endpoint for MF vs Stock
+      const endpoint = isMutualFund
+        ? `${STOCK_API_BASE_URL}/mutual_funds_details?stock_name=${encodeURIComponent(cleanSymbol)}`
+        : `${STOCK_API_BASE_URL}/stock?name=${encodeURIComponent(cleanSymbol)}`;
+
+      const response = await fetch(endpoint, {
+        headers: {
+          'x-api-key': apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Check for quota/rate limit errors
+      if (response.status === 429 || response.status === 403) {
+        const exhaustedKeyIndex = currentApiKeyIndex;
+        console.warn(`⚠️ API Key ${exhaustedKeyIndex + 1} quota exceeded, rotating...`);
+
+        // Send email for THIS key exhaustion
+        const remainingKeys = API_KEYS.length - attempt - 1;
+        await sendAlertNotification(
+          `⚠️ API Key #${exhaustedKeyIndex + 1} exhausted. ${remainingKeys} keys remaining.`
+        );
+
+        currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
+
+        // All keys exhausted?
+        if (attempt === API_KEYS.length - 1) {
+          await sendAlertNotification(
+            `🚨 CRITICAL: ALL ${API_KEYS.length} API KEYS EXHAUSTED!`
+          );
+          throw new Error('All API keys exhausted.');
+        }
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Stock/Fund not found (${response.status})`);
+      }
+
+      console.log(`✅ API Key ${currentApiKeyIndex + 1} - Request successful`);
+
+      const data = await response.json();
+
+      // Handle MF response
+      if (isMutualFund) {
+        if (!data.basic_info?.fund_name || !data.nav_info?.current_nav) {
+          throw new Error('No fund details found');
+        }
+
+        return {
+          success: true,
+          price: data.nav_info.current_nav,
+          companyName: data.basic_info.fund_name,
+          symbol: data.basic_info.fund_name.toUpperCase().replace(/\s+/g, '-'),
+          category: data.basic_info.category
+        };
+      }
+
+      // Handle Stock response
+      const nsePrice = parseFloat(data.currentPrice?.NSE || 0);
+      const bsePrice = parseFloat(data.currentPrice?.BSE || 0);
+      const currentPrice = nsePrice || bsePrice;
+
+      if (!currentPrice) throw new Error('No price found');
+
+      return {
+        success: true,
+        price: currentPrice,
+        companyName: data.companyName || cleanSymbol,
+        symbol: data.symbol || cleanSymbol
+      };
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  throw new Error('Failed to fetch price with all available API keys');
+};
 
   const renderDetailPage = () => {
     const typeHoldings = holdings
