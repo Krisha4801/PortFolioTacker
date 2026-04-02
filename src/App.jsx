@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { loadSampleData } from './loadSampleData';
+import { validationForManageTransactionPage } from './validationForManageTransactionPage';
+import { fetchAndUpdatePrices, updateHoldingPricesInFirebase } from './bufferStorage_currPrice';
+import NotesModal from './NotesModal';
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Plus, TrendingUp, TrendingDown, RefreshCw, Wallet, BarChart3, ArrowLeft, Edit, Trash2, Save, X, LogIn, LogOut } from 'lucide-react';
 import { db, auth, signInWithGoogle, logOut } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, getDoc, setDoc, writeBatch, orderBy, limit } from 'firebase/firestore';
-import NotesModal from './NotesModal';
+import AIAdvisor from './AIAdvisor';
 
 // Color palette for instruments
 const COLORS = {
