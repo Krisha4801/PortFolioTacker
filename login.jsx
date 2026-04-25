@@ -1,3 +1,4 @@
+// Added validation for email and password
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useState } from "react";
