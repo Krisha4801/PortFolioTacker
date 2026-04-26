@@ -36,6 +36,10 @@ You can record transactions, group holdings by type, and view your overall portf
 - Sign in with Firebase authentication.
 - Store portfolio data in Firestore.
 
+### AI Advisor
+
+- Suggests improvment in current portfolio.
+- Recommends trending investment options
 ---
 
 ## Tech Stack
@@ -57,6 +61,7 @@ Install dependencies:
 ```bash
 npm install
 ```
+Fill in your API keys in `.env` file in the project root.
 
 Start the development server:
 
@@ -72,23 +77,7 @@ npm run build
 
 ---
 
-## Environment Variables
 
-Create a `.env` file in the project root.
-
-Add your Firebase configuration:
-
-```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGEBUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGINGSENDER_ID=your_messaging_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
-```
-
----
 
 ## Project Structure
 
